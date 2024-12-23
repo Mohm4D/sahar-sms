@@ -1,4 +1,7 @@
 
+- composer install.
+- php artisan migrate.
+- php artisan db:seed
 
 طبق فایل تسکت ارسالی ثبت نام میبایست با یک شماره موبایل شروع شود ،
 سپس "api verify" برای تایید شماره موبایل کال میشود ،
