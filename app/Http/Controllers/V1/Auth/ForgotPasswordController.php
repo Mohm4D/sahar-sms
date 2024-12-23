@@ -5,6 +5,7 @@ namespace App\Http\Controllers\V1\Auth;
 use App\Http\Controllers\AppBaseController;
 use App\Http\Requests\V1\ResetPasswordRequest;
 use App\Http\Requests\V1\ّForgetPasswordRequest;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Password;
 
 class ForgotPasswordController extends AppBaseController
@@ -17,7 +18,13 @@ class ForgotPasswordController extends AppBaseController
     public function sendResetLinkEmail(ّForgetPasswordRequest $request)
     {
         $status = Password::sendResetLink($request->only('email'));
-        return $status === Password::RESET_LINK_SENT ? response()->json(['message' => __($status)], 200) : response()->json(['email' => __($status)], 400);
+
+        if ($status === Password::RESET_LINK_SENT) {
+            return response()->json(['message' => 'لینک ریست پسورد به ایمیل شما ارسال شد'], 200);
+        }
+
+        return response()->json(['message' => 'خطایی رخ داده مجددا اقدام کنید'], 500);
+
     }
 
     /**
@@ -27,9 +34,19 @@ class ForgotPasswordController extends AppBaseController
      */
     public function resetPassword(ResetPasswordRequest $request)
     {
-        $status = Password::reset($request->only('email', 'password', 'password_confirmation', 'token'), function ($user, $password) {
-            $user->forceFill(['password' => bcrypt($password)])->save();
-        });
-        return $status === Password::PASSWORD_RESET ? response()->json(['message' => __($status)], 200) : response()->json(['email' => __($status)], 400);
+        $status = Password::reset(
+            $request->only('email', 'password', 'password_confirmation', 'token'),
+            function ($user, $password) {
+                $user->forceFill([
+                    'password' => Hash::make($password),
+                ])->save();
+            }
+        );
+
+        if ($status === Password::PASSWORD_RESET) {
+            return response()->json(['message' => 'پسورد با موفقیت تغیر یافت'], 200);
+        }
+
+        return response()->json(['message' => 'خطایی رخ داده مجددا اقدام کنید'], 500);
     }
 }
