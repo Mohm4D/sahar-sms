@@ -138,15 +138,6 @@ class AuthController extends AppBaseController
             return response()->json(['message' => 'Invalid password'], 401);
         }
 
-        if ($request->filled('otp')) {
-            if ($this->verifyOtp($user, $request->otp)) {
-                $token = $user->createToken('auth_token')->plainTextToken;
-                return response()->json(['message' => 'Login successful', 'token' => $token], 200);
-            }
-            return response()->json(['message' => 'Invalid OTP'], 401);
-        }
-
-
         $data = json_decode(Redis::get('temp_data:' . $request->mobile));
 
         $smsCode = $this->generateVerifyCode();
